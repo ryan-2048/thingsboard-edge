@@ -16,6 +16,7 @@
 package org.thingsboard.rule.engine.api;
 
 import io.netty.channel.EventLoopGroup;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.thingsboard.common.util.ExecutorProvider;
 import org.thingsboard.common.util.ListeningExecutor;
 import org.thingsboard.rule.engine.api.notification.SlackService;
@@ -411,4 +412,6 @@ public interface TbContext {
     EventService getEventService();
 
     AuditLogService getAuditLogService();
+
+    RedisTemplate<String, Object> getRedisTemplate();
 }
