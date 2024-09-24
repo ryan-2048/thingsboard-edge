@@ -680,7 +680,6 @@ public class CloudManagerService {
                     log.error("Exception during disconnect: {}", ex.getMessage());
                 }
                 try {
-                    Thread.sleep(5000);
                     edgeRpcClient.connect(routingKey, routingSecret,
                             this::onUplinkResponse,
                             this::onEdgeUpdate,
