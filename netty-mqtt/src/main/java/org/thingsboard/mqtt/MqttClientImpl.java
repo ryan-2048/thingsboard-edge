@@ -450,6 +450,7 @@ final class MqttClientImpl implements MqttClient {
             log.trace("[{}] Sending message {}", channel != null ? channel.id() : "UNKNOWN", message);
             return this.channel.writeAndFlush(message);
         }
+        eventLoop.schedule((Runnable) () -> connect(host, port, reconnect), clientConfig.getReconnectDelay(), TimeUnit.SECONDS);
         return this.channel.newFailedFuture(new ChannelClosedException("Channel is closed!"));
     }
 
