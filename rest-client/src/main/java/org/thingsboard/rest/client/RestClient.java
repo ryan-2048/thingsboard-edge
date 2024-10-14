@@ -269,6 +269,19 @@ public class RestClient implements Closeable {
         doLogin();
     }
 
+    public void customLogin(String userId) throws Exception {
+        String[] userIds = userId.split(",");
+        for (int i = 0; i < userIds.length; i++) {
+            Optional<JsonNode> tokenInfo = this.getUserToken(UserId.fromString(userIds[i]));
+            if (tokenInfo.isPresent()) {
+                long ts = System.currentTimeMillis();
+                setTokenInfo(ts, tokenInfo.get());
+            } else {
+                throw new Exception("customLogin Exception");
+            }
+        }
+    }
+
     private void doLogin() {
         long ts = System.currentTimeMillis();
         Map<String, String> loginRequest = new HashMap<>();
@@ -283,6 +296,14 @@ public class RestClient implements Closeable {
         this.refreshToken = tokenInfo.get("refreshToken").asText();
         this.mainTokenExpTs = JWT.decode(this.mainToken).getExpiresAtAsInstant().toEpochMilli();
         this.refreshTokenExpTs = JWT.decode(refreshToken).getExpiresAtAsInstant().toEpochMilli();
+        this.clientServerTimeDiff = JWT.decode(this.mainToken).getIssuedAtAsInstant().toEpochMilli() - ts;
+    }
+
+    public synchronized void setTokenInfo(long ts, String token, String refreshToken) {
+        this.mainToken = token;
+        this.refreshToken = refreshToken;
+        this.mainTokenExpTs = JWT.decode(this.mainToken).getExpiresAtAsInstant().toEpochMilli();
+        this.refreshTokenExpTs = JWT.decode(this.refreshToken).getExpiresAtAsInstant().toEpochMilli();
         this.clientServerTimeDiff = JWT.decode(this.mainToken).getIssuedAtAsInstant().toEpochMilli() - ts;
     }
 
@@ -479,6 +500,59 @@ public class RestClient implements Closeable {
         if (status != null) {
             params.put("status", status.name());
             urlSecondPart += "&status={status}";
+        }
+
+        addTimePageLinkToParam(params, pageLink);
+
+        return restTemplate.exchange(
+                baseURL + urlSecondPart + "&" + getTimeUrlParams(pageLink),
+                HttpMethod.GET,
+                HttpEntity.EMPTY,
+                new ParameterizedTypeReference<PageData<AlarmInfo>>() {
+                },
+                params).getBody();
+    }
+
+    public PageData<AlarmInfo> getAlarmsV2(EntityId entityId, String statusList, String severityList, String typeList, String assigneeId, Long startTime, Long endTime, TimePageLink pageLink) {
+        String urlSecondPart = "/api/v2/alarm/{entityType}/{entityId}?t=1";
+        Map<String, String> params = new HashMap<>();
+        params.put("entityType", entityId.getEntityType().name());
+        params.put("entityId", entityId.getId().toString());
+
+        if (!StringUtils.isEmpty(statusList)) {
+            String[] statusArray = statusList.split(",");
+            for (String status : statusArray) {
+                urlSecondPart += "&statusList=" + status;
+            }
+        }
+
+        if (!StringUtils.isEmpty(severityList)) {
+            String[] severityArray = severityList.split(",");
+            for (String severity : severityArray) {
+                urlSecondPart += "&severityList=" + severity;
+            }
+        }
+
+        if (!StringUtils.isEmpty(typeList)) {
+            String[] typeArray = typeList.split(",");
+            for (String type : typeArray) {
+                urlSecondPart += "&typeList=" + type;
+            }
+        }
+
+        if (assigneeId != null) {
+            params.put("assigneeId", assigneeId);
+            urlSecondPart += "&assigneeId={assigneeId}";
+        }
+
+        if (startTime != null) {
+            params.put("startTime", startTime.toString());
+            urlSecondPart += "&startTime={startTime}";
+        }
+
+        if (endTime != null) {
+            params.put("endTime", endTime.toString());
+            urlSecondPart += "&endTime={endTime}";
         }
 
         addTimePageLinkToParam(params, pageLink);
