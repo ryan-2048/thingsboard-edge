@@ -318,4 +318,12 @@ public class AuthController extends BaseController {
         return resetPasswordRateLimits.computeIfAbsent(userId,
                 key -> new TbRateLimits(defaultLimitsConfiguration, true));
     }
+
+    @ApiOperation(value = "refresh tb-edge-version",
+            notes = "refresh tb-edge-version.")
+    @RequestMapping(value = "/noauth/refreshtbedgeversion", method = RequestMethod.GET)
+    @ResponseBody
+    public ResponseEntity<String> refreshTbEdgeVersion() {
+        return new ResponseEntity<>("1.0", HttpStatus.OK);
+    }
 }
