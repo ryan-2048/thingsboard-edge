@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.channel.EventLoopGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.Arrays;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.thingsboard.common.util.JacksonUtil;
 import org.thingsboard.common.util.ListeningExecutor;
 import org.thingsboard.rule.engine.api.MailService;
@@ -979,6 +980,11 @@ public class DefaultTbContext implements TbContext {
     @Override
     public AuditLogService getAuditLogService() {
         return mainCtx.getAuditLogService();
+    }
+
+    @Override
+    public RedisTemplate<String, Object> getRedisTemplate() {
+        return mainCtx.getRedisTemplate();
     }
 
     private TbMsgMetaData getActionMetaData(RuleNodeId ruleNodeId) {
