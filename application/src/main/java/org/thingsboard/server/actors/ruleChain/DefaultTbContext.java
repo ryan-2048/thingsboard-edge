@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.channel.EventLoopGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.Arrays;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.thingsboard.common.util.DebugModeUtil;
 import org.thingsboard.common.util.JacksonUtil;
 import org.thingsboard.common.util.ListeningExecutor;
@@ -1033,6 +1034,11 @@ public class DefaultTbContext implements TbContext {
         if (!this.getTenantId().equals(TenantIdLoader.findTenantId(this, entityId))) {
             throw new TbNodeException("Entity with id: '" + entityId + "' specified in the configuration doesn't belong to the current tenant.", true);
         }
+    }
+
+    @Override
+    public RedisTemplate<String, Object> getRedisTemplate() {
+        return mainCtx.getRedisTemplate();
     }
 
     private static String getFailureMessage(Throwable th) {
